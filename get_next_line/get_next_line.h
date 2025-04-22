@@ -6,20 +6,41 @@
 /*   By: gubusque <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/12 22:31:34 by gubusque          #+#    #+#             */
-/*   Updated: 2025/04/15 19:54:36 by gubusque         ###   ########.fr       */
+/*   Updated: 2025/04/22 18:22:28 by gubusque         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+#ifndef GET_NEXT_LINE_H
+#define GET_NEXT_LINE_H
+
 #include <unistd.h>
 #include <stdlib.h>
+#include <string.h>
+
+#ifndef BUFFER_SIZE
+# define BUFFER_SIZE 42
+#endif
 
 typedef struct s_list
 {
-	char	*line;
-	s_list	*next;
-
-} t_list
+	char		*content;
+	int		fd;
+	struct s_list	*next;
+} t_list;
 
 char	*get_next_line(int fd);
-t_list	*ft_lstnew(char *line);	
-unsigned int	ft_check(void *to_check, void *checker);
+t_list	*ft_lstnew(int	fd);	
+char	*ft_strjoin(const char *s1, const char *s2);
+char	*ft_substr(const char *str, unsigned int start, size_t len);
+char	*ft_strndup(const char *s1, size_t len);
+char	*ft_strdup(const char *s1);
+char	*ft_strchr(const char *s, int c);
+size_t	ft_strlen(const char *str);
+void	ft_bzero(void *s, size_t len);
+void	*ft_calloc(size_t count, size_t size);
+void	*ft_memcpy(void *dst, const void *src, size_t len);
+void	ft_lstremove(t_list **lst, t_list *node, t_list *prev);
+void	ft_lstdelone(t_list *lst, void (*del)(void *));
+void	ft_lstadd_front(t_list **lst, t_list *new);
+
+#endif
