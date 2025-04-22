@@ -6,7 +6,7 @@
 /*   By: gubusque <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/21 20:10:46 by gubusque          #+#    #+#             */
-/*   Updated: 2025/04/22 18:23:18 by gubusque         ###   ########.fr       */
+/*   Updated: 2025/04/22 20:06:32 by gubusque         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,6 +63,7 @@ char	*get_next_line(int fd)
 	/* manage the rest of already read*/
 	if (current_fd->content)
 	{
+		//printf("current_fd->content = %s\n", current_fd->content); //"aaaaaa"
 		/* check if in buffer exist "\n" if exist
 		 * pointer of new_line have the memory position 
 		 * of the "\n" assignet as his memory*/
@@ -72,7 +73,8 @@ char	*get_next_line(int fd)
 		if (new_line)
 		{
 			line = strndup(current_fd->content, 
-				new_line - current_fd->content + 1);
+				new_line - current_fd->content + 1);	
+			//printf("line inside new line = %s\n", line); //"aaaaaaaaaaaa"
 			char *tmp = ft_strdup(new_line + 1);
 			free(current_fd->content);
 			/* assign the current content to the new line 
@@ -82,15 +84,18 @@ char	*get_next_line(int fd)
 		}
 		/* if there is no "\n" on the buffer*/
 		line = ft_strdup(current_fd->content);
+		//printf("line before free = %s\n", line); //"aaaaaaaaaaaaaaaaaaaaaaaa"
 		free(current_fd->content);
 		current_fd->content = NULL;
 	}
 	else /* empty content*/
 		line = strdup("");
+	//printf("assigning empty line or existing  = %s\n", line); //"aaaaaaaaaaaaaa"
 	/*read*/
 	while (!(new_line = strchr(line, '\n')))
 	{
 		bytes_read = read(fd, buffer, BUFFER_SIZE);
+		//printf("bytes read = %zd\n", bytes_read); //"aaaaaaaaaaaaaa"
 		if (bytes_read <= 0)
 		/* in case there is none existing buffer to read 
 		 * but we still have a line read from the last buffer
@@ -114,13 +119,18 @@ char	*get_next_line(int fd)
 		/*in case there is an existing buffer we join the buffer
 		 * to the "empty line"*/
 		buffer[bytes_read] = '\0';
-		char	*tempo = ft_strjoin(line, buffer);
+		//printf("line bf join = %s\n", line); //"aaaaaaaaaaaaaaaaaaaaaaa"
+		//printf("buffer = %s\n", buffer); //"aaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+		char	*tmp_join = ft_strjoin(line, buffer);
+		//printf("tmp_join  = %s\n", tmp_join); //"aaaaaaaaaaaaaaaaaaaaaaaa"
 		free(line);
-		line = tempo;
+		line = tmp_join;
 	}
+	//printf("line before free 0 = %s\n", line); //"aaaaaaaaaaaaaaaaaaaaaaaa"
 	char	*tmp_line = ft_strndup(line, new_line - line + 1);
 	char	*tmp_rest = strdup(new_line + 1);
 	free(line);
 	current_fd->content = tmp_rest;
+	//printf("line before free 1 = %s\n", tmp_line); //"aaaaaaaaaaaaaaaaaaaaaaa"
 	return (tmp_line);
 }

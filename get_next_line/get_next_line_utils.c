@@ -6,7 +6,7 @@
 /*   By: gubusque <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/15 19:47:53 by gubusque          #+#    #+#             */
-/*   Updated: 2025/04/22 18:21:49 by gubusque         ###   ########.fr       */
+/*   Updated: 2025/04/22 20:10:02 by gubusque         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,7 @@ void	ft_lstadd_front(t_list **lst, t_list *new)
 
 void	ft_lstdelone(t_list *lst, void (*del)(void *))
 {
-	if (!lst)
+	if (!lst || !lst->content)
 		return ;
 	del(lst->content);
 	free(lst);
@@ -65,6 +65,7 @@ void	*ft_memcpy(void *dst, const void *src, size_t len)
 	tmp_src = (unsigned char *) src;
 	while (len-- > 0)
 		*(tmp_dst++) = *(tmp_src++);
+	//printf("\n\ntmp_dst =%s\n\n", (char *)tmp_dst);
 	return (dst);
 }
 
@@ -192,17 +193,22 @@ char	*ft_strjoin(const char *s1, const char *s2)
 	len1 = 0;
 	len2 = 0;
 	if (s1)
-		len1 = ft_strlen(s1);
+		len1 = ft_strlen(s1) - 1;
 	if (s2)
 		len2 = ft_strlen(s2);
 	res = (char *) malloc((len1 + len2 + 1) * sizeof(char));
+	//printf("\n\nlen1 = %zu\nlen2 = %zu\n", len1, len2);
+	//printf("s2(buffer) =%s\n", s2);
 	if (!res)
 		return (NULL);
 	if (s1)
 		ft_memcpy(res, s1, len1);
+	//printf("s2(buffer) = %s\n", s2);
+	//printf("res = %s\n", res);
 	if (s2)
 		ft_memcpy(res + len1, s2, len2);
 	res[len1 + len2] = '\0';
+	//printf("res = %s\n", res);
 	return (res);
 }
 

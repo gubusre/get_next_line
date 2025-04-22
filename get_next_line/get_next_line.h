@@ -6,12 +6,14 @@
 /*   By: gubusque <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/12 22:31:34 by gubusque          #+#    #+#             */
-/*   Updated: 2025/04/22 18:22:28 by gubusque         ###   ########.fr       */
+/*   Updated: 2025/04/22 19:50:40 by gubusque         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef GET_NEXT_LINE_H
 #define GET_NEXT_LINE_H
+
+#include <stdio.h>
 
 #include <unistd.h>
 #include <stdlib.h>

@@ -6,7 +6,7 @@
 /*   By: gubusque <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/22 17:26:49 by gubusque          #+#    #+#             */
-/*   Updated: 2025/04/22 18:24:56 by gubusque         ###   ########.fr       */
+/*   Updated: 2025/04/22 18:38:55 by gubusque         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ int main() {
 	}
 
 	printf("--- Reading from fd1 ---\n");
-	while ((line = get_next_line(fd1)) != NULL) {
+	while ((line = get_next_line(fd1))) {
 		printf("FD1: %s", line);
 		free(line);
 	}
