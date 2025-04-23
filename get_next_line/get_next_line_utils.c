@@ -6,7 +6,7 @@
 /*   By: gubusque <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/15 19:47:53 by gubusque          #+#    #+#             */
-/*   Updated: 2025/04/22 20:10:02 by gubusque         ###   ########.fr       */
+/*   Updated: 2025/04/23 22:26:30 by gubusque         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,9 +27,43 @@ t_list	*ft_lstnew(int	fd)
 	return (new_node);
 }
 
+t_list	*ft_lstfind(t_list **lst, int fd)
+{
+	t_list	*new_node;
+	t_list	*current;
+
+	/*if list not exist create a new list and the **lst
+	 * will be pointing the first node of the list*/
+	if (!lst || !*lst)
+	{
+		new_node = ft_lstnew(fd);
+		if (!new_node)
+			return (NULL);
+		ft_lstadd_front(lst, new_node);
+		return (new_node);
+	}
+	/*if the list exist iterate the list until find
+	 * the node with the same current file descriptor*/
+	current = *lst;
+	while (current)
+	{
+		if (current->fd == fd)
+			return (current);
+		current = current->next;
+	}
+	/* if not found the create a new list
+	 * with the fd being read and ad it to
+	 * the first pointer of the list*/
+	new_node = ft_lstnew(fd);
+	if (!(new_node))
+		return (NULL);
+	ft_lstadd_front(lst, new_node);
+	return (new_node);
+}
+
 void	ft_lstadd_front(t_list **lst, t_list *new)
 {
-	if (!new)
+	if (!lst || !new)
 		return ;
 	new->next = *lst;
 	*lst = new;
@@ -37,21 +71,27 @@ void	ft_lstadd_front(t_list **lst, t_list *new)
 
 void	ft_lstdelone(t_list *lst, void (*del)(void *))
 {
-	if (!lst || !lst->content)
+	if (!lst)
 		return ;
-	del(lst->content);
+	if (del && lst->content)
+		del(lst->content);
 	free(lst);
 }
 
-void	ft_lstremove(t_list **lst, t_list *node, t_list *prev)
+void	ft_lstremove(t_list **lst, t_list *target, t_list *prev)
 {
-	if (!lst || !node)
+	if (!*lst || !lst || !target)
 		return ;
-	if (!prev)
-		return ;
-	else
-		prev->next = node->next;
-	ft_lstdelone(node, free);
+	if (*lst == target)
+	{
+		*lst = target->next;
+		ft_lstdelone(target, free);
+	}
+	else if (prev)
+	{
+		prev->next = target->next;
+		ft_lstdelone(target, free);
+	}
 }
 
 void	*ft_memcpy(void *dst, const void *src, size_t len)
@@ -59,22 +99,19 @@ void	*ft_memcpy(void *dst, const void *src, size_t len)
 	unsigned char	*tmp_dst;
 	unsigned char	*tmp_src;
 
-	if (dst == (void *)0 && src == (void *)0)
+	if (!dst && !src)
 		return (dst);
 	tmp_dst = (unsigned char *) dst;
 	tmp_src = (unsigned char *) src;
 	while (len-- > 0)
 		*(tmp_dst++) = *(tmp_src++);
-	//printf("\n\ntmp_dst =%s\n\n", (char *)tmp_dst);
 	return (dst);
 }
 
 void	*ft_calloc(size_t count, size_t size)
 {
 	unsigned char	*tmp;
-	size_t			i;
 
-	i = 0;
 	tmp = malloc(count * size);
 	if (!tmp)
 		return (NULL);
@@ -98,8 +135,9 @@ size_t	ft_strlen(const char *str)
 	if (!str)
 		return (0);
 	len = 0;
-	while (str[len++])
+	while (str[len] != '\0')
 	{
+		len++;
 	}
 	return (len);
 }
@@ -124,41 +162,46 @@ char	*ft_strchr(const char *s, int c)
 	return (NULL);
 }
 
-char	*ft_strdup(const char *s1)
+char	*ft_strdup(const char *s)
 {
-	char	*dst;
+	char	*tmp;
 	size_t	i;
 
-	dst = (char *) malloc(ft_strlen(s1) + 1);
-	if (!dst)
+	tmp = (char *) malloc((sizeof(char)) * ft_strlen(s) + 1);
+	if (!tmp)
 		return (NULL);
 	i = 0;
-	while (s1[i])
+	while (s[i])
 	{
-		dst[i] = s1[i];
+		tmp[i] = s[i];
 		i++;
 	}
-	dst[i] = 0;
-	return (dst);
+	tmp[i] = 0;
+	return (tmp);
 }
 
-char	*ft_strndup(const char *s1, size_t len)
+char	*ft_strndup(const char *s, size_t n)
 {
-	char	*dst;
+	char	*tmp;
+	size_t	len;
 	size_t	i;
 
-	dst = (char *) malloc(len + 1);
-	if (!dst)
+	if (!s)
+		return (NULL);
+	len = ft_strlen(s);
+	if (n > len)
+		n = len;
+	tmp = (char *) malloc(sizeof(char) * (n + 1));
+	if (!tmp)
 		return (NULL);
 	i = 0;
-	while (s1[i] && len > 0)
+	while (i < n)
 	{
-		dst[i] = s1[i];
+		tmp[i] = s[i];
 		i++;
-		len--;
 	}
-	dst[i] = 0;
-	return (dst);
+	tmp[i] = '\0';
+	return (tmp);
 }
 
 char	*ft_substr(char const *s, unsigned int start, size_t len)
@@ -193,22 +236,17 @@ char	*ft_strjoin(const char *s1, const char *s2)
 	len1 = 0;
 	len2 = 0;
 	if (s1)
-		len1 = ft_strlen(s1) - 1;
+		len1 = ft_strlen(s1);
 	if (s2)
 		len2 = ft_strlen(s2);
 	res = (char *) malloc((len1 + len2 + 1) * sizeof(char));
-	//printf("\n\nlen1 = %zu\nlen2 = %zu\n", len1, len2);
-	//printf("s2(buffer) =%s\n", s2);
 	if (!res)
 		return (NULL);
 	if (s1)
 		ft_memcpy(res, s1, len1);
-	//printf("s2(buffer) = %s\n", s2);
-	//printf("res = %s\n", res);
 	if (s2)
 		ft_memcpy(res + len1, s2, len2);
 	res[len1 + len2] = '\0';
-	//printf("res = %s\n", res);
 	return (res);
 }
 

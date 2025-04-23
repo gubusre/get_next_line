@@ -6,45 +6,11 @@
 /*   By: gubusque <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/21 20:10:46 by gubusque          #+#    #+#             */
-/*   Updated: 2025/04/22 20:06:32 by gubusque         ###   ########.fr       */
+/*   Updated: 2025/04/23 23:08:46 by gubusque         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
-
-t_list	*ft_lstfind(t_list **lst, int fd)
-{
-	t_list	*new_node;
-	t_list	*current;
-
-	/*if list not exist create a new list and the **lst 
-	 * will be pointing the first node of the list*/
-	if (!lst || !*lst)
-	{
-		new_node = ft_lstnew(fd);
-		if (!new_node)
-			return (NULL);
-		ft_lstadd_front(lst, new_node);
-		return (new_node);
-	}
-	/*if the list exist iterate the list until find 
-	 * the node with the same current file descriptor*/
-	current = *lst;
-	while (current)
-	{
-		if (current->fd == fd)
-			return (current);
-		current = current->next;
-	}
-	/* if not found the create a new list
-	 * with the fd being read and ad it to
-	 * the first pointer of the list*/
-	new_node = ft_lstnew(fd);
-	if (!(new_node))
-		return (NULL);
-	ft_lstadd_front(lst, new_node);
-	return (new_node);
-}
 
 char	*get_next_line(int fd)
 {
@@ -53,17 +19,17 @@ char	*get_next_line(int fd)
 	ssize_t		bytes_read;
 	char		*line;
 	char		*new_line;
-	char		buffer[BUFFER_SIZE + 1];
+	char		*buffer;
 
-	if (fd < 0 || BUFFER_SIZE <= 0 || read(fd, buffer, 0) < 0)
+	if (fd < 0 || BUFFER_SIZE <= 0)
 		return (NULL);
 	current_fd = ft_lstfind(&fd_list, fd);
 	if (!current_fd)
 		return (NULL);
+	line = NULL;
 	/* manage the rest of already read*/
 	if (current_fd->content)
 	{
-		//printf("current_fd->content = %s\n", current_fd->content); //"aaaaaa"
 		/* check if in buffer exist "\n" if exist
 		 * pointer of new_line have the memory position 
 		 * of the "\n" assignet as his memory*/
@@ -72,37 +38,60 @@ char	*get_next_line(int fd)
 		 * from the start until "\n"*/
 		if (new_line)
 		{
-			line = strndup(current_fd->content, 
-				new_line - current_fd->content + 1);	
-			//printf("line inside new line = %s\n", line); //"aaaaaaaaaaaa"
+			line = ft_strndup(current_fd->content, 
+				new_line - current_fd->content + 1);
+			if (!line)
+				return (NULL);
 			char *tmp = ft_strdup(new_line + 1);
 			free(current_fd->content);
 			/* assign the current content to the new line 
 			 * starting from "\n"*/
+			if (!tmp)
+			{
+				free(line);
+				return (NULL);
+			}
 			current_fd->content = tmp;
 			return (line);
 		}
 		/* if there is no "\n" on the buffer*/
 		line = ft_strdup(current_fd->content);
-		//printf("line before free = %s\n", line); //"aaaaaaaaaaaaaaaaaaaaaaaa"
+		if (!line)
+		{
+			free(current_fd->content);
+			return (NULL);
+		}
 		free(current_fd->content);
 		current_fd->content = NULL;
 	}
 	else /* empty content*/
-		line = strdup("");
-	//printf("assigning empty line or existing  = %s\n", line); //"aaaaaaaaaaaaaa"
+		line = ft_strdup("");
+	if (!line)
+		return (NULL);
+	buffer = (char *) malloc(sizeof(char) * (BUFFER_SIZE + 1));
+	if (!buffer)
+	{
+		if (!line)
+		{
+			free(buffer);
+			free(line);
+		}
+		return (NULL);
+	}
 	/*read*/
-	while (!(new_line = strchr(line, '\n')))
+	while (!(new_line = ft_strchr(line, '\n')))
 	{
 		bytes_read = read(fd, buffer, BUFFER_SIZE);
-		//printf("bytes read = %zd\n", bytes_read); //"aaaaaaaaaaaaaa"
 		if (bytes_read <= 0)
 		/* in case there is none existing buffer to read 
 		 * but we still have a line read from the last buffer
 		 * we return the line and then free it and the lst*/
 		{
 			if (*line)
+			{
+				free(buffer);
 				return (line);
+			}
 			free(line);
 			t_list	*prev = NULL;
 			t_list	*temp = fd_list;
@@ -114,23 +103,38 @@ char	*get_next_line(int fd)
 				temp = temp->next;
 			}
 			ft_lstremove(&fd_list, temp, prev);
+			free(buffer);
 			return (NULL);
 		}
 		/*in case there is an existing buffer we join the buffer
 		 * to the "empty line"*/
 		buffer[bytes_read] = '\0';
-		//printf("line bf join = %s\n", line); //"aaaaaaaaaaaaaaaaaaaaaaa"
-		//printf("buffer = %s\n", buffer); //"aaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 		char	*tmp_join = ft_strjoin(line, buffer);
-		//printf("tmp_join  = %s\n", tmp_join); //"aaaaaaaaaaaaaaaaaaaaaaaa"
+		if (!tmp_join)
+		{
+			free(line);
+			free(buffer);
+			return (NULL);
+		}
 		free(line);
 		line = tmp_join;
 	}
-	//printf("line before free 0 = %s\n", line); //"aaaaaaaaaaaaaaaaaaaaaaaa"
 	char	*tmp_line = ft_strndup(line, new_line - line + 1);
-	char	*tmp_rest = strdup(new_line + 1);
+	if (!tmp_line)
+	{
+		free(line);
+		free(buffer);
+		return (NULL);
+	}
+	char	*tmp_rest = ft_strdup(new_line + 1);
 	free(line);
+	if (!tmp_rest)
+	{
+		free(tmp_line);
+		free(buffer);
+		return (NULL);
+	}
 	current_fd->content = tmp_rest;
-	//printf("line before free 1 = %s\n", tmp_line); //"aaaaaaaaaaaaaaaaaaaaaaa"
+	free(buffer);
 	return (tmp_line);
 }
