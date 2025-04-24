@@ -1,3 +1,0 @@
-Linea 1 del archivo 1
-Linea 2 del archivo 1
-Linea 3 del archivo 1
