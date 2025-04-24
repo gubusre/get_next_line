@@ -6,20 +6,20 @@
 /*   By: gubusque <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/15 19:47:53 by gubusque          #+#    #+#             */
-/*   Updated: 2025/04/23 22:26:30 by gubusque         ###   ########.fr       */
+/*   Updated: 2025/04/24 19:42:31 by gubusque         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 
-t_list	*ft_lstnew(int	fd)
+t_list	*ft_lstnew(int fd)
 {
 	t_list	*new_node;
 
 	if (fd < 0)
 		return (NULL);
 	new_node = (t_list *)malloc(sizeof(t_list));
-	if(!new_node)
+	if (!new_node)
 		return (NULL);
 	new_node->content = NULL;
 	new_node->next = NULL;
@@ -32,8 +32,6 @@ t_list	*ft_lstfind(t_list **lst, int fd)
 	t_list	*new_node;
 	t_list	*current;
 
-	/*if list not exist create a new list and the **lst
-	 * will be pointing the first node of the list*/
 	if (!lst || !*lst)
 	{
 		new_node = ft_lstnew(fd);
@@ -42,8 +40,6 @@ t_list	*ft_lstfind(t_list **lst, int fd)
 		ft_lstadd_front(lst, new_node);
 		return (new_node);
 	}
-	/*if the list exist iterate the list until find
-	 * the node with the same current file descriptor*/
 	current = *lst;
 	while (current)
 	{
@@ -51,9 +47,6 @@ t_list	*ft_lstfind(t_list **lst, int fd)
 			return (current);
 		current = current->next;
 	}
-	/* if not found the create a new list
-	 * with the fd being read and ad it to
-	 * the first pointer of the list*/
 	new_node = ft_lstnew(fd);
 	if (!(new_node))
 		return (NULL);
@@ -249,4 +242,3 @@ char	*ft_strjoin(const char *s1, const char *s2)
 	res[len1 + len2] = '\0';
 	return (res);
 }
-

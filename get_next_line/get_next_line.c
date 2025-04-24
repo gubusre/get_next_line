@@ -6,7 +6,7 @@
 /*   By: gubusque <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/21 20:10:46 by gubusque          #+#    #+#             */
-/*   Updated: 2025/04/23 23:08:46 by gubusque         ###   ########.fr       */
+/*   Updated: 2025/04/24 18:32:20 by gubusque         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,8 +89,14 @@ char	*get_next_line(int fd)
 		{
 			if (*line)
 			{
+				current_fd->content = ft_strdup("");
 				free(buffer);
-				return (line);
+				if (line)
+				{
+					t_list *prev = NULL;
+					ft_lstremove(&fd_list, current_fd, prev);
+					return (line);
+				}
 			}
 			free(line);
 			t_list	*prev = NULL;
