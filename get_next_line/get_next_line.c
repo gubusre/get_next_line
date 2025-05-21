@@ -6,7 +6,7 @@
 /*   By: gubusque <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/19 16:52:34 by gubusque          #+#    #+#             */
-/*   Updated: 2025/05/19 19:47:03 by gubusque         ###   ########.fr       */
+/*   Updated: 2025/05/21 23:01:51 by gubusque         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,14 +18,15 @@ static char	*appended_buffer(char *current_res, char *read_buf)
 
 	if (!current_res)
 	{
-		new_res =ft_strdup(read_buf);
+		new_res = ft_strdup(read_buf);
 		if (!new_res)
 			return (NULL);
 		return (new_res);
 	}
-	new_res = ft_free(current_res, read_buf);
+	new_res = ft_strjoin(current_res, read_buf);
 	if (!new_res)
-		return (NULL);
+		return (free(current_res), NULL);
+	free(current_res);
 	return (new_res);
 }
 
@@ -35,37 +36,26 @@ char	*read_file(int fd, char *res)
 	int		byte_read;
 
 	buffer = ft_calloc(BUFFER_SIZE + 1, sizeof(char));
+	if (!buffer && res)
+		return (free(res), NULL);
 	if (!buffer)
-	{
-		if (res)
-			free(res);
 		return (NULL);
-	}
 	byte_read = 1;
 	while (!(res && ft_strchr(res, '\n')) && byte_read > 0)
 	{
 		byte_read = read(fd, buffer, BUFFER_SIZE);
+		if (byte_read == -1 && res)
+			free(res);
 		if (byte_read == -1)
-		{
-			free(buffer);
-			if (res)
-				free(res);
-			return (NULL);
-		}
-		if (byte_read == 0)
-			break ;
+			return (free(buffer), NULL);
 		buffer[byte_read] = '\0';
 		res = appended_buffer(res, buffer);
 		if (!res)
-		{
-			free(buffer);
-			return (NULL);
-		}
+			return (free(buffer), NULL);
 	}
-	free(buffer);
 	if (byte_read == 0 && !res)
-		return (NULL);
-	return (res);
+		return (free(buffer), NULL);
+	return (free(buffer), res);
 }
 
 char	*ft_line(char *buffer)
@@ -82,7 +72,7 @@ char	*ft_line(char *buffer)
 	alloc_size = i + 1;
 	if (buffer[i] == '\n')
 		alloc_size++;
-	line = ft_calloc(alloc_size, sizeof(char));
+	line = (char *)ft_calloc(alloc_size, sizeof(char));
 	if (!line)
 		return (NULL);
 	i = 0;
@@ -99,29 +89,23 @@ char	*ft_line(char *buffer)
 char	*ft_next(char *buffer)
 {
 	char	*remainder;
-	int		i;
-	int		j;
-	size_t	len;
+	size_t	i;
+	size_t	j;
 
 	i = 0;
 	while (buffer[i] && buffer[i] != '\n')
 		i++;
-	if (!buffer[i])
-	{
-		free(buffer);
-		return (NULL);
-	}
-	len = ft_strlen(buffer);
-	remainder = ft_calloc((len - i), sizeof(char));
+	if (buffer[i] == '\0')
+		return (free(buffer), NULL);
+	j = ft_strlen(buffer);
+	remainder = (char *)ft_calloc((j - i) + 1, sizeof(char));
 	if (!remainder)
-	{
-		free(buffer);
-		return (NULL);
-	}
+		return (free(buffer), NULL);
 	i++;
 	j = 0;
 	while (buffer[i])
 		remainder[j++] = buffer[i++];
+	remainder[j] = '\0';
 	free(buffer);
 	return (remainder);
 }
